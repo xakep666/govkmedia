@@ -94,16 +94,8 @@ ApplicationWindow {
                     ListModel {
                         id: musiclist
                         objectName: qsTr("musiclist")
-                        //how to correctly pass JSON from go to qml?
-                        function appendStruct(m) {
-                            musiclist.append({"artist":m.artist,
-                                                 "title":m.title,
-                                                 "duration":m.duration,
-                                                 "lyricsid":m.lyricsid,
-                                                 "id":m.id,
-                                                 "url":m.url
-                                             })
-                        }
+                        //translate go struct to dict, direct call "append" from go not works
+                        function appendStruct(m) {append(m)}
                     }
                 }
         }
