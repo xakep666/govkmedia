@@ -12,7 +12,7 @@ Window {
         y: 8
         width: 75
         height: 84
-        source: "qrc:///images/error.png"
+        source: "qrc:///icons/error.png"
     }
 
     Text {

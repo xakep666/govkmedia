@@ -3,6 +3,7 @@ package main
 import (
     "strconv"
     "time"
+    "dialogboxes"
 )
 
 func (ae *AppEngine) loadAvatar() {
@@ -14,7 +15,7 @@ func (ae *AppEngine) loadAvatar() {
     avatar:=mwroot.ObjectByName("avatar")
     resp,err:=ae.MakeRequest("users.get",params)
     if err!=nil {
-        ae.showErrorDialog("Не удалось загрузить аватар: "+err.Error())
+        dialogboxes.ShowErrorDialog("Не удалось загрузить аватар: "+err.Error())
         return
     }
     /*in response we get json like this
@@ -35,7 +36,7 @@ func (ae *AppEngine) loadName() {
     namefield:=mwroot.ObjectByName("name")
     resp,err:=ae.MakeRequest("users.get",params)
     if err!=nil {
-        ae.showErrorDialog("Не удалось загрузить имя: "+err.Error())
+        dialogboxes.ShowErrorDialog("Не удалось загрузить имя: "+err.Error())
         return
     }
     resp=resp["response"].([]interface{})[0].(map[string]interface{})
@@ -64,7 +65,7 @@ func (ae *AppEngine) loadAudios(uid int) {
     model:=mwroot.ObjectByName("musiclist")
     resp,err:=ae.MakeRequest("audio.get",params)
     if err!=nil {
-        ae.showErrorDialog("Не удалось загрузить аудиозаписи: "+err.Error())
+        dialogboxes.ShowErrorDialog("Не удалось загрузить аудиозаписи: "+err.Error())
         return
     }
     model.Call("clear")
