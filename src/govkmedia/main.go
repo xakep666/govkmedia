@@ -12,7 +12,7 @@ import (
 const APP_ID int = 5255931
 const APP_SCOPE string = "audio,video,photos,offline"
 
-//go:generate genqrc qml images
+//go:generate genqrc qml
 
 func main() {
     err:=qml.Run(run)
@@ -90,7 +90,7 @@ func (ae *AppEngine) toggleWindow(authDone bool) {
         object:=root.ObjectByName(v)
         object.Set("visible",!authDone)
     }
-    authobjects:=[...]string{"tabs","avatar","name"}
+    authobjects:=[...]string{"tabs","avatar","name","open"}
     for _,v:=range authobjects {
         object:=root.ObjectByName(v)
         object.Set("visible",authDone)

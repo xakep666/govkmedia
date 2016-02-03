@@ -98,6 +98,7 @@ ApplicationWindow {
                         id: musiclist
                         objectName: qsTr("musiclist")
                         //translate go struct to dict, direct call "append" from go not works
+
                         function appendStruct(m) {append(m)}
                     }
                 }
@@ -124,5 +125,20 @@ ApplicationWindow {
         text: qsTr("")
         textFormat: Text.PlainText
         font.pixelSize: 12
+    }
+
+    Button {
+        id: open
+        objectName: qsTr("open")
+        x: 127
+        y: 166
+        text: qsTr("Открыть")
+        visible:false
+        onClicked: {
+            switch(tabs.currentIndex) {
+            case 0:
+                audioplayer.show()
+            }
+        }
     }
 }

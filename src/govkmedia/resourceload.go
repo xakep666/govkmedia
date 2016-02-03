@@ -4,6 +4,7 @@ import (
     "strconv"
     "time"
     "dialogboxes"
+    "audioplayer"
 )
 
 func (ae *AppEngine) loadAvatar() {
@@ -71,6 +72,7 @@ func (ae *AppEngine) loadAudios(uid int) {
     model.Call("clear")
     content:=resp["response"].(map[string]interface{})
     items:=content["items"].([]interface{})
+    tmplist:=[]audioplayer.PtrSong{}
     for _,v:=range items {
         mp:=v.(map[string]interface{})
         item:=MusicItem{}
@@ -86,5 +88,9 @@ func (ae *AppEngine) loadAudios(uid int) {
         item.Duration=duration_obj.String()
         item.Genre=mp["genre_id"].(float64)
         model.Call("appendStruct",item)
+        tmplist=append(tmplist,audioplayer.PtrSong{Artist: item.Artist, Title: item.Title, Url: item.Url})
     }
+    player:=audioplayer.Engine{}
+    ae.QMLEngine.Context().SetVar("audioplayer",&player)
+    player.Initialize(ae.Token,tmplist)
 }

@@ -5,6 +5,7 @@ import (
     "log"
 )
 
+//go:generate genqrc qml
 
 func ShowErrorDialog(text string) {
     engine := qml.NewEngine()
