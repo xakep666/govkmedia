@@ -12,7 +12,10 @@ GoProject {
 
         /* Include .qml, .js, and image files from main directory and subdirectories */
         QmlFiles {
-            directory:"src/govkmedia/qml"
+            directory:"src"
+        }
+        JavaScriptFiles {
+            directory:"src"
         }
     }
     Package {
