@@ -52,6 +52,7 @@ type MusicItem struct {
     Id float64
     Url string
     LyricsId float64
+    Genre float64
 }
 
 func (ae *AppEngine) loadAudios(uid int) {
@@ -71,16 +72,18 @@ func (ae *AppEngine) loadAudios(uid int) {
     items:=content["items"].([]interface{})
     for _,v:=range items {
         mp:=v.(map[string]interface{})
-        artist:=mp["artist"].(string)
-        title:=mp["title"].(string)
-        id:=mp["id"].(float64)
-        url:=mp["url"].(string)
+        item:=MusicItem{}
+        item.Artist=mp["artist"].(string)
+        item.Title=mp["title"].(string)
+        item.Id=mp["id"].(float64)
+        item.Url=mp["url"].(string)
         lyricsid,present:=mp["lyrics_id"].(float64)
         if !present {lyricsid=0}
+        item.LyricsId=lyricsid
         duration:=mp["duration"].(float64)
         duration_obj,_:=time.ParseDuration(strconv.FormatFloat(duration,'g',-1,64)+"s")
-        durationstr:=duration_obj.String()
-        item:=MusicItem{Artist: artist, Title: title, Duration: durationstr,Id: id,LyricsId: lyricsid,Url:url}
+        item.Duration=duration_obj.String()
+        item.Genre=mp["genre_id"].(float64)
         model.Call("appendStruct",item)
     }
 }

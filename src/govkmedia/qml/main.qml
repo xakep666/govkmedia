@@ -89,6 +89,10 @@ ApplicationWindow {
                         role: "lyricsid"
                         visible:false
                     }
+                    TableViewColumn {
+                        role: "genre"
+                        visible: false
+                    }
 
                     ListModel {
                         id: musiclist
