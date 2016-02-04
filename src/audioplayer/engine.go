@@ -13,27 +13,29 @@ type PtrSong struct {
     Title string
     Url string
     LyricsId float64
+    Duration float64
 }
 
 type Engine struct {
-    QMLEngine *qml.Engine
-    MainWindow *qml.Window
-    Playlist []PtrSong
-    CurrentPlaying int
-    AccessToken string
+    qmlEngine *qml.Engine
+    mainWindow *qml.Window
+    playlist []PtrSong
+    currentPlaying int
+    accessToken string
     initialized bool
 }
 
 func (e *Engine) Initialize(token string, playlist []PtrSong) {
-    e.QMLEngine=qml.NewEngine()
-    component, err := e.QMLEngine.LoadFile("qrc:///qml/player.qml")
+    e.qmlEngine=qml.NewEngine()
+    component, err := e.qmlEngine.LoadFile("qrc:///qml/player.qml")
     if err != nil {
         log.Panicln(err)
     }
-    context := e.QMLEngine.Context()
-    e.MainWindow = component.CreateWindow(nil)
+    context := e.qmlEngine.Context()
+    e.mainWindow = component.CreateWindow(nil)
     context.SetVar("playerengine",e)
-    e.Playlist=playlist
+    e.accessToken=token
+    e.playlist=playlist
     e.initialized=true
 }
 
@@ -42,8 +44,7 @@ func (e *Engine) Show() {
          dialogboxes.ShowErrorDialog("Движок плеера не инициализирован")
          return
     }
-    e.MainWindow.Show()
-    e.CurrentPlaying=0
-    e.MainWindow.Root().Call("resetProgress")
-    e.Play()
+    e.mainWindow.Show()
+    e.currentPlaying=0
+    e.StartPlay()
 }

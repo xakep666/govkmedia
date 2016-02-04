@@ -7,6 +7,10 @@ ApplicationWindow{
     id: playerwindow
     width: 600
     height: 600
+    maximumWidth: width
+    maximumHeight: height
+    minimumWidth: width
+    minimumHeight: height
     title: "VkAudio"
     TextArea {
         id: lyrics
@@ -59,7 +63,7 @@ ApplicationWindow{
 
 
     Text {
-        id: duration
+        id: durationText
         x: 7
         y: 509
         width: 50
@@ -69,7 +73,7 @@ ApplicationWindow{
     }
 
     Text {
-        id: eta
+        id: etaText
         x: playerwindow.width-57
         y: playerwindow.height-91
         width: 47
@@ -139,10 +143,10 @@ ApplicationWindow{
         onClicked: {
             if(state==="playing") {
                 state="paused"
-                playerengine.pause()
+                mplayer.pause()
             } else {
                 state="playing"
-                playerengine.play()
+                mplayer.play()
             }
         }
     }
@@ -197,27 +201,27 @@ ApplicationWindow{
     MediaPlayer {
         id: mplayer
         objectName: qsTr("mplayer")
-        property string vkartist: ""
-        property string vktitle: ""
+        autoLoad: true
+        function resetProgress() {
+            etaText.text=totimetext(Math.floor(vkduration))
+            durationText.text=totimetext(0)
+            bufferprogress.value=0
+            playprogress.value=0
+            playslider.maximumValue=Math.floor(vkduration)
+            playslider.value=0
+        }
         onPlaying: {
             playtimer.start()
             playpause.state="playing"
             updateTitle(vkartist,vktitle)
-            playslider.maximumValue=Math.floor(duration/1000)
         }
         onPaused: {
             playpause.state="paused"
-            playtimer.stop()
         }
         onStopped: {
-            playprogress.value=0
-            eta.text=totimetext(duration/1000)
-            duration.text=totimetext(0)
-            playtimer.stop()
-            updateTitle("","")
+            playpause.state="paused"
             resetProgress()
         }
-
     }
 
     ToolButton {
@@ -285,7 +289,7 @@ ApplicationWindow{
 
     Slider {
         id: volslider
-        x: 437
+        x: playerwindow.width-163
         y: playerwindow.height-43
         width: 153
         height: 22
@@ -327,6 +331,7 @@ ApplicationWindow{
             //if we can not seek turn slider back
             if(mplayer.seekable) {
                 mplayer.seek(playslider.value*1000)
+                playprogress.value=mplayer.position/mplayer.duration
             } else {
                 playslider.value=0
             }
@@ -340,18 +345,13 @@ ApplicationWindow{
         onTriggered: {
             bufferprogress.value=mplayer.bufferProgress
             playprogress.value=mplayer.position/mplayer.duration
-            duration.text=totimetext(mplayer.position/1000)
-            eta.text=totimetext((mplayer.duration-mplayer.position)/1000)
+            if (mplayer.duration-mplayer.position<1000) playerengine.next() //MediaPlayer doesn`t have signal like onEnded
+            durationText.text=totimetext(mplayer.position/1000)
+            etaText.text=totimetext((mplayer.duration-mplayer.position)/1000)
             playslider.doseek=false
             playslider.value=mplayer.position/1000
             playslider.doseek=true
         }
-    }
-    function resetProgress() {
-        eta.text=totimetext(Math.floor(duration/1000))
-        duration.text=totimetext(0)
-        bufferprogress.value=0
-        playprogress.value=0
     }
     onClosing: {
         mplayer.stop()

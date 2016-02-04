@@ -86,9 +86,14 @@ func (ae *AppEngine) loadAudios(uid int) {
         duration:=mp["duration"].(float64)
         duration_obj,_:=time.ParseDuration(strconv.FormatFloat(duration,'g',-1,64)+"s")
         item.Duration=duration_obj.String()
-        item.Genre=mp["genre_id"].(float64)
+        item.Genre,present=mp["genre_id"].(float64)
+        if !present {item.Genre=0}
         model.Call("appendStruct",item)
-        tmplist=append(tmplist,audioplayer.PtrSong{Artist: item.Artist, Title: item.Title, Url: item.Url})
+        tmplist=append(tmplist,audioplayer.PtrSong{Artist: item.Artist,
+                                                   Title: item.Title,
+                                                   Url: item.Url,
+                                                   Duration: duration,
+                                                   LyricsId: item.LyricsId})
     }
     player:=audioplayer.Engine{}
     ae.QMLEngine.Context().SetVar("audioplayer",&player)
