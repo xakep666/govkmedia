@@ -24,5 +24,11 @@ GoProject {
             filter: "*.*"
         }
     }
+    Package {
+        name: "github.com/jeffail/tunny"
+        Files {
+            filter: "*.*"
+        }
+    }
 }
 

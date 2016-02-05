@@ -12,10 +12,11 @@ import (
 )
 
 type Downloadable interface {
+    SetSource(string)
     AllocateFile(string,string,string) error
     ActualPath() string
     FileDescriptor() *os.File
-    Download() error
+    Download(<- chan WorkerState) error
     BytesDownloaded() uint64
     BytesTotal() uint64
     Progress() float64
@@ -31,12 +32,12 @@ type ControllableReadWriter struct {
     lastCalled *time.Time
     lastTransferred uint64
     momentSpeed float64
-    controlChan <-chan workerState
-    currentState workerState
+    controlChan <-chan WorkerState
+    currentState WorkerState
 }
 
 type DownloadableFile struct {
-    Url string
+    url string
     fpath string
     fdesc *os.File
     isDownloading bool
@@ -44,11 +45,11 @@ type DownloadableFile struct {
     source *ControllableReadWriter
 }
 
-type workerState int
+type WorkerState int
 const (
-    running = iota
-    paused
-    stopped
+    Running = iota
+    Paused
+    Stopped
 )
 
 //function which allows pause,resume,stop IO operation, error: on stop - EOF
@@ -59,11 +60,11 @@ func (m *ControllableReadWriter) ioLocker() error {
         if wasmsg { m.currentState=newstate }
         switch m.currentState {
             //on running, we unlock operation and perform it
-            case running: return nil
+            case Running: return nil
             //on stopped, return EOF
-            case stopped: return io.EOF
+            case Stopped: return io.EOF
             //on paused, hold lock until reciving stopped/running
-            case paused: time.Sleep(time.Millisecond) //prevent overloaing
+            case Paused: time.Sleep(time.Millisecond) //prevent overloaing
             default: time.Sleep(time.Millisecond)
         }
     }
@@ -102,8 +103,13 @@ func (m *ControllableReadWriter) Write(buf []byte) (int,error) {
     return read,err
 }
 
+func (d *DownloadableFile) SetSource(url string) {
+    d.url=url
+}
+
 func (d *DownloadableFile) AllocateFile(dir,name,ext string) error{
     if d.fdesc!=nil { return nil }
+    if d.url=="" { return errors.New("Url is not set") }
     //if exist, try increment number in brackets
     fpath:=filepath.Join(dir,fmt.Sprintf("%s.%s",name,ext))
     fdesc,err:=os.Create(fpath)
@@ -133,21 +139,19 @@ func (d *DownloadableFile) FileDescriptor() *os.File {
 }
 
 //worker gorutine
-func (d *DownloadableFile) Download(echan chan error,state <- chan workerState) {
+func (d *DownloadableFile) Download(state <- chan WorkerState) error {
     if d.fdesc==nil {
-        echan<-errors.New("Cannot start downloading,file not created")
-        return
+        return errors.New("Cannot start downloading,file not created")
     }
     //one worker per one file
     if d.isDownloading {
-        return
+        return nil
     } else {
         d.isDownloading=true
     }
-    resp,err:=http.Get(d.Url)
+    resp,err:=http.Get(d.url)
     if err!=nil {
-        echan<-err
-        return
+        return err
     }
     defer resp.Body.Close()
     d.size,_=strconv.ParseUint(resp.Header.Get("Content-Length"),10,64)
@@ -158,10 +162,10 @@ func (d *DownloadableFile) Download(echan chan error,state <- chan workerState) 
         d.removeFile()
     } else {
         if err!=nil {
-            echan<-err
-            return
+            return err
         }
     }
+    return nil
 }
 
 //needed to remove partitally downloaded file
