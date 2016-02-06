@@ -7,6 +7,8 @@ import (
     "errors"
 )
 
+//go:generate genqrc qml icons
+
 type DownloadEngine struct {
     controlChannels []chan WorkerState
     engine *qml.Engine
