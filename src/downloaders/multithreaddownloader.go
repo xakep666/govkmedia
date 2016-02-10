@@ -40,8 +40,12 @@ func (d *DownloadableFile) AllocateFile(dir,name,ext string) {
             if ext!="" { allocpath=filepath.Join(dir,fmt.Sprintf("%s (%d).%s",name,n,ext))
             } else { allocpath=filepath.Join(dir,fmt.Sprintf("%s (%d)",name,n)) }
         }
-        _,err:=os.Stat(allocpath)
-        isExist=os.IsExist(err)
+        finfo,err:=os.Stat(allocpath)
+        if err!=nil {
+            isExist=false
+        } else {
+            isExist=finfo.Mode().IsRegular()
+        }
         n++
     }
     d.fpath=allocpath

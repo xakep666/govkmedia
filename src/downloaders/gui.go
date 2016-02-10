@@ -6,7 +6,6 @@ import (
     _"dialogboxes"
     "errors"
     "log"
-    _"path/filepath"
     "time"
     "path/filepath"
     "github.com/nareix/curl"
@@ -20,18 +19,10 @@ type DisplayableItem struct {
     Dlprogress float64
 }
 
-type DlState int
-const (
-    Running = iota
-    Paused
-    Stopped
-)
-
 type DownloadEngine struct {
     engine *qml.Engine
     mainwindow *qml.Window
     threadPool *tunny.WorkPool
-    state DlState
     srcs []Downloadable
     totaldl []int64
     completedl []int64
@@ -42,7 +33,6 @@ func Initialize(srcs []Downloadable,threads int) (d *DownloadEngine,err error) {
     d=new(DownloadEngine)
     d.registerQMLTypes()
     d.srcs=srcs
-    d.state=Running
     d.engine=qml.NewEngine()
     component,err:=d.engine.LoadFile("qrc:///qml/downloadgui.qml")
     if err!=nil {
@@ -82,7 +72,7 @@ func Initialize(srcs []Downloadable,threads int) (d *DownloadEngine,err error) {
 
 func (d *DownloadEngine) Destruct() {
     d.Cancel()
-    d.threadPool.Close()
+    //d.threadPool.Close()
 }
 
 func (d *DownloadEngine) AppendDownload(dl Downloadable) {
@@ -91,21 +81,15 @@ func (d *DownloadEngine) AppendDownload(dl Downloadable) {
 }
 
 func (d *DownloadEngine) Resume() {
-    if d.state!=Paused { return }
     for i:=0;i<len(d.srcs);i++ { d.srcs[i].Start() }
-    d.state=Running
 }
 
 func (d *DownloadEngine) Pause() {
-    if d.state!=Running { return }
     for i:=0;i<len(d.srcs);i++ { d.srcs[i].Pause() }
-    d.state=Paused
 }
 
-//gui deactivates buttons
 func (d *DownloadEngine) Cancel() {
     for i:=0;i<len(d.srcs);i++ { d.srcs[i].Stop() }
-    d.state=Stopped
 }
 
 //percentage

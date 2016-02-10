@@ -13,7 +13,7 @@ ApplicationWindow {
     minimumWidth: width
     maximumHeight: height
     minimumHeight: height
-    onClosing: { engine.destruct(); dlwindow.close() }
+    onClosing: { engine.destruct() }
     ProgressBar {
         id: totalprogressbar
         objectName: "totalprogressbar"
@@ -30,20 +30,21 @@ ApplicationWindow {
         width: 23
         height: 23
         state: "running"
+        property bool isRunning: true
         onClicked: {
-            if (state==="running") {
+            if (isRunning) {
                 engine.pause()
-                state="paused"
-            }
-            if (state==="paused") {
+                isRunning=false
+            } else {
                 engine.resume()
-                state="running"
+                isRunning=true
             }
         }
 
         states: [
             State{
                 name: "running"
+                when: startpausebtn.isRunning
                 PropertyChanges {
                     target: startpausebtn
                     iconSource: "qrc:///icons/pause.png"
@@ -51,6 +52,7 @@ ApplicationWindow {
             },
             State{
                 name: "paused"
+                when: !startpausebtn.isRunning
                 PropertyChanges {
                     target: startpausebtn
                     iconSource: "qrc:///icons/play.png"
@@ -66,7 +68,10 @@ ApplicationWindow {
         width: 24
         height: 23
         iconSource: "qrc:///icons/stop.png"
-
+        onClicked: {
+            engine.cancel()
+            startpausebtn.isRunning=false
+        }
     }
 
     Text {
