@@ -3,40 +3,85 @@ package downloaders
 import (
     "github.com/jeffail/tunny"
     "gopkg.in/qml.v1"
-    "dialogboxes"
+    _"dialogboxes"
     "errors"
+    "log"
+    _"path/filepath"
+    "time"
+    "path/filepath"
+    "github.com/nareix/curl"
 )
 
 //go:generate genqrc qml icons
 
+type DisplayableItem struct {
+    Fname string
+    Dlspeed string
+    Dlprogress float64
+}
+
+type DlState int
+const (
+    Running = iota
+    Paused
+    Stopped
+)
+
 type DownloadEngine struct {
-    controlChannels []chan WorkerState
     engine *qml.Engine
     mainwindow *qml.Window
     threadPool *tunny.WorkPool
-    state WorkerState
+    state DlState
     srcs []Downloadable
+    totaldl []int64
+    completedl []int64
 }
 
 func Initialize(srcs []Downloadable,threads int) (d *DownloadEngine,err error) {
-    if srcs==nil || threads<=0 { return nil,errors.New("Invalid argument on downloader init")}
+    if srcs==nil || threads<=0 { return nil,errors.New("Неверный аргумент при инициализации загрузчика")}
+    d=new(DownloadEngine)
+    d.registerQMLTypes()
     d.srcs=srcs
     d.state=Running
-    //gui init code here
-    d.threadPool=tunny.CreatePool(threads,func(object interface{}) interface{} {
-        cchan:=make(chan WorkerState)
-        d.controlChannels=append(d.controlChannels,cchan)
-        err:=object.(Downloadable).Download(cchan)
-        if err!=nil { dialogboxes.ShowErrorDialog(err.Error()) }
+    d.engine=qml.NewEngine()
+    component,err:=d.engine.LoadFile("qrc:///qml/downloadgui.qml")
+    if err!=nil {
+        log.Panicln(err)
+    }
+    d.engine.Context().SetVar("engine",d)
+    d.mainwindow=component.CreateWindow(nil)
+    d.mainwindow.Show()
+    model:=d.mainwindow.Root().ObjectByName("filetable").ObjectByName("dllist")
+    d.threadPool,err=tunny.CreatePool(threads,func(object interface{}) interface{} {
+        dlo:=object.(Downloadable)
+        d.completedl=append(d.completedl,0)
+        d.totaldl=append(d.totaldl,0)
+        model.Call("appendStruct",&DisplayableItem{Fname: filepath.Base(dlo.ActualPath()),Dlspeed:"0",Dlprogress:0.0})
+        item:=model.Call("back").(qml.Object)
+        index:=model.Int("count")-1
+        dlo.Progress(func (p curl.ProgressStatus) {
+            if p.Size!=0 { d.completedl[index]=p.Size }
+            if p.ContentLength!=0 { d.totaldl[index]=p.ContentLength }
+            d.updateTotalProgress()
+            //when download completes, percents sets to 0
+            if p.Percent!=0 { item.Set("dlprogress",p.Percent) }
+            item.Set("dlspeed",curl.PrettySpeedString(p.Speed))
+        },500*time.Millisecond)
+        _,err:=object.(Downloadable).Do()
+        if err!=nil { /*dialogboxes.ShowErrorDialog(err.Error())*/ log.Println(err.Error()) }
         return nil
-    })
+    }).Open()
+    if err!=nil {
+        log.Panicln(err)
+    }
     for _,v:=range srcs {
-        d.threadPool.SendWork(v)
+        d.threadPool.SendWorkAsync(v,func(interface{},error) {})
     }
     return
 }
 
 func (d *DownloadEngine) Destruct() {
+    d.Cancel()
     d.threadPool.Close()
 }
 
@@ -47,28 +92,44 @@ func (d *DownloadEngine) AppendDownload(dl Downloadable) {
 
 func (d *DownloadEngine) Resume() {
     if d.state!=Paused { return }
-    for _,v:=range d.controlChannels { v<-Running }
+    for i:=0;i<len(d.srcs);i++ { d.srcs[i].Start() }
     d.state=Running
 }
 
 func (d *DownloadEngine) Pause() {
     if d.state!=Running { return }
-    for _,v:=range d.controlChannels { v<-Paused }
+    for i:=0;i<len(d.srcs);i++ { d.srcs[i].Pause() }
     d.state=Paused
 }
 
 //gui deactivates buttons
 func (d *DownloadEngine) Cancel() {
-    for _,v:=range d.controlChannels { v<-Stopped }
+    for i:=0;i<len(d.srcs);i++ { d.srcs[i].Stop() }
     d.state=Stopped
 }
 
 //percentage
 func (d *DownloadEngine) TotalProgress() float64 {
     var totaldl,completedl float64
-    for _,v:=range d.srcs {
-        totaldl+=float64(v.BytesTotal())
-        completedl+=float64(v.BytesDownloaded())
+    for i:=0;i<len(d.totaldl);i++ {
+        totaldl+=float64(d.totaldl[i])
+        completedl+=float64(d.completedl[i])
     }
     return completedl/totaldl
+}
+
+func (d *DownloadEngine) updateTotalProgress() {
+    mwroot:=d.mainwindow.Root()
+    pr:=d.TotalProgress()
+    mwroot.ObjectByName("totalprogressbar").Set("value",pr)
+    mwroot.ObjectByName("percents").Call("setPercents",pr*100)
+}
+
+func (d *DownloadEngine) registerQMLTypes() {
+    types:=[]qml.TypeSpec{
+        {
+            Init: func(m *DisplayableItem, obj qml.Object) {},
+        },
+    }
+    qml.RegisterTypes("GoExtensions",1,0,types)
 }

@@ -30,5 +30,11 @@ GoProject {
             filter: "*.*"
         }
     }
+    Package {
+        name: "github.com/nareix/curl"
+        Files {
+            filter: "*.*"
+        }
+    }
 }
 

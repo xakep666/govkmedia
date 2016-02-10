@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.3
 import QtQuick.Controls.Styles 1.3
+//import GoExtensions 1.0
 ApplicationWindow {
     id: dlwindow
     title: qsTr("Загрузка")
@@ -12,8 +13,10 @@ ApplicationWindow {
     minimumWidth: width
     maximumHeight: height
     minimumHeight: height
+    onClosing: { engine.destruct(); dlwindow.close() }
     ProgressBar {
         id: totalprogressbar
+        objectName: "totalprogressbar"
         x: 10
         y: 39
         width: 326
@@ -27,6 +30,17 @@ ApplicationWindow {
         width: 23
         height: 23
         state: "running"
+        onClicked: {
+            if (state==="running") {
+                engine.pause()
+                state="paused"
+            }
+            if (state==="paused") {
+                engine.resume()
+                state="running"
+            }
+        }
+
         states: [
             State{
                 name: "running"
@@ -52,6 +66,7 @@ ApplicationWindow {
         width: 24
         height: 23
         iconSource: "qrc:///icons/stop.png"
+
     }
 
     Text {
@@ -70,10 +85,13 @@ ApplicationWindow {
         width: 28
         height: 15
         font.pixelSize: 12
+        function setPercents(p) {
+            text= (isNaN(p) ? 0 : Math.ceil(p))+"%"
+        }
     }
 
     Text {
-        id: collpseexpandtext
+        id: collapseexpandtext
         x: 10
         y: 68
         width: 90
@@ -87,9 +105,9 @@ ApplicationWindow {
         states: [
             State {
                 name:"collapsed"
+                when:collapseexpandtext.isCollapsed
                 PropertyChanges {
-                    target: collpseexpandtext
-                    isCollapsed: false
+                    target: collapseexpandtext
                     text: qsTr("Развернуть")
                 }
                 PropertyChanges {
@@ -98,23 +116,27 @@ ApplicationWindow {
                 }
                 PropertyChanges {
                     target: dlwindow
-                    width: dlwindow.origwidth
+                    height: dlwindow.origheight
+                    maximumHeight: dlwindow.origheight
+                    minimumHeight: dlwindow.origheight
                 }
             },
             State{
                 name:"expanded"
+                when:!collapseexpandtext.isCollapsed
                 PropertyChanges {
-                    target: collpseexpandtext
-                    isCollapsed: true
+                    target: collapseexpandtext
                     text: qsTr("Свернуть")
                 }
                 PropertyChanges {
                     target: iconrotate
-                    angle: -90
+                    angle: 90
                 }
                 PropertyChanges {
                     target: dlwindow
-                    width: dlwindow.origwidth+filetable.width+10
+                    height: dlwindow.origheight+filetable.height+10
+                    maximumHeight: dlwindow.origheight+filetable.height+10
+                    minimumHeight: dlwindow.origheight+filetable.height+10
                 }
             }
         ]
@@ -123,8 +145,7 @@ ApplicationWindow {
                 from: "collapsed"
                 to: "expanded"
                 RotationAnimation {
-                    duration: 1000
-                    target: collpseexpandicon
+                    duration: 500
                     direction: RotationAnimation.Clockwise
                 }
             },
@@ -132,25 +153,25 @@ ApplicationWindow {
                 from: "expanded"
                 to: "collapsed"
                 RotationAnimation {
-                    duration: 1000
-                    target: collpseexpandicon
+                    duration: 500
                     direction: RotationAnimation.Counterclockwise
                 }
             }
         ]
+
         Image {
-            id: collpseexpandicon
+            id: collapseexpandicon
             x: 0
             y: 0
-            width: collpseexpandtext.height
-            height: collpseexpandtext.height
+            width: collapseexpandtext.height
+            height: collapseexpandtext.height
             source: "qrc:///icons/play.png"
             transform: Rotation {
                 id: iconrotate
                 axis {x:0;y:0;z:1}
                 origin {
-                    x:collpseexpandicon.width/2
-                    y:collpseexpandicon.height/2
+                    x:collapseexpandicon.width/2
+                    y:collapseexpandicon.height/2
                 }
                 angle:0
             }
@@ -159,16 +180,50 @@ ApplicationWindow {
             id: mousereact
             x: 0
             y: 0
-            width: collpseexpandtext.width
-            height: collpseexpandtext.height
+            width: collapseexpandtext.width
+            height: collapseexpandtext.height
+            onClicked: collapseexpandtext.isCollapsed=!collapseexpandtext.isCollapsed
         }
         TableView {
             id: filetable
-            visible: !collpseexpandtext.isCollapsed
+            objectName: "filetable"
+            visible: !collapseexpandtext.isCollapsed
             x:0
-            y:collpseexpandtext.height+5
+            y:collapseexpandtext.height+5
             width:dlwindow.width-20
             height:250
+            model: dllist
+            TableViewColumn {
+                role: "fname"
+                title: qsTr("Имя файла")
+                width:filetable.width*3/5
+            }
+            TableViewColumn {
+                role: "dlspeed"
+                title: qsTr("Скорость")
+                width:filetable.width*1/5
+            }
+            TableViewColumn {
+                role: "dlprogress"
+                id: dlprogressColumn
+                title: qsTr("Прогресс")
+                width:filetable.width*1/5
+                delegate: ProgressBar {
+                        id: dlprogressBar
+                        width: dlprogressColumn.width
+                        value: filetable.model.get(styleData.row).dlprogress
+                    }
+            }
+            ListModel {
+                id: dllist
+                objectName: "dllist"
+                function appendStruct(m) {
+                    append(m)
+                }
+                function back() {
+                    return get(count-1)
+                }
+            }
         }
     }
 }
