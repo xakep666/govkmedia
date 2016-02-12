@@ -31,6 +31,7 @@ ApplicationWindow {
         height: 23
         state: "running"
         property bool isRunning: true
+        property bool isStopped: false
         onClicked: {
             if (isRunning) {
                 engine.pause()
@@ -44,7 +45,7 @@ ApplicationWindow {
         states: [
             State{
                 name: "running"
-                when: startpausebtn.isRunning
+                when: startpausebtn.isRunning && !startpausebtn.isStopped
                 PropertyChanges {
                     target: startpausebtn
                     iconSource: "qrc:///icons/pause.png"
@@ -52,7 +53,7 @@ ApplicationWindow {
             },
             State{
                 name: "paused"
-                when: !startpausebtn.isRunning
+                when: !startpausebtn.isRunning || startpausebtn.isStopped
                 PropertyChanges {
                     target: startpausebtn
                     iconSource: "qrc:///icons/play.png"
@@ -71,6 +72,8 @@ ApplicationWindow {
         onClicked: {
             engine.cancel()
             startpausebtn.isRunning=false
+            startpausebtn.isStopped
+            percents.text=qsTr("Отменена")
         }
     }
 

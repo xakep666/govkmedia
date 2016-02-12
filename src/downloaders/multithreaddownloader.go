@@ -22,6 +22,8 @@ type Downloadable interface {
 type DownloadableFile struct {
     fpath string
     *curl.Request
+    ctrl *curl.Control
+    isStopped bool
 }
 
 func (d *DownloadableFile) SetSource(url string) {
@@ -50,9 +52,14 @@ func (d *DownloadableFile) AllocateFile(dir,name,ext string) {
     }
     d.fpath=allocpath
     d.SaveToFile(allocpath)
+    d.ctrl=d.ControlDownload()
 }
 
 func (d *DownloadableFile) ActualPath() string { return d.fpath }
-func (d *DownloadableFile) Start() { d.ControlDownload().Resume() }
-func (d *DownloadableFile) Stop() { d.ControlDownload().Stop() }
-func (d *DownloadableFile) Pause() { d.ControlDownload().Pause() }
+func (d *DownloadableFile) Start() { if !d.isStopped { d.ctrl.Resume() } }
+func (d *DownloadableFile) Stop() {
+    d.ctrl.Stop()
+    os.Remove(d.fpath) //remove incomplete downloads
+    d.isStopped=true
+}
+func (d *DownloadableFile) Pause() { d.ctrl.Pause() }

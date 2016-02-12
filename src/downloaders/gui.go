@@ -46,7 +46,7 @@ func Initialize(srcs []Downloadable,threads int) (d *DownloadEngine,err error) {
         dlo:=object.(Downloadable)
         d.completedl=append(d.completedl,0)
         d.totaldl=append(d.totaldl,0)
-        model.Call("appendStruct",&DisplayableItem{Fname: filepath.Base(dlo.ActualPath()),Dlspeed:"0",Dlprogress:0.0})
+        model.Call("appendStruct",&DisplayableItem{Fname: filepath.Base(dlo.ActualPath()),Dlspeed:"0B/s",Dlprogress:0.0})
         item:=model.Call("back").(qml.Object)
         index:=model.Int("count")-1
         dlo.Progress(func (p curl.ProgressStatus) {
