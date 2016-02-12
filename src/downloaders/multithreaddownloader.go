@@ -30,10 +30,9 @@ func (d *DownloadableFile) SetSource(url string) {
     d.Request=curl.New(url)
 }
 
-func (d *DownloadableFile) AllocateFile(dir,name,ext string) {
+func (d *DownloadableFile) generateUniqueName(dir,name,ext string) (allocpath string){
     isExist:=true
     n:=0
-    var allocpath string
     for isExist {
         if n==0 {
             if ext!="" { allocpath=filepath.Join(dir,fmt.Sprintf("%s.%s",name,ext))
@@ -50,6 +49,11 @@ func (d *DownloadableFile) AllocateFile(dir,name,ext string) {
         }
         n++
     }
+    return
+}
+
+func (d *DownloadableFile) AllocateFile(dir,name,ext string) {
+    allocpath:=d.generateUniqueName(dir,name,ext)
     d.fpath=allocpath
     d.SaveToFile(allocpath)
     d.ctrl=d.ControlDownload()

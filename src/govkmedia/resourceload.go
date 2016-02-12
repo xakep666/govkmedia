@@ -5,6 +5,7 @@ import (
     "time"
     "dialogboxes"
     "audioplayer"
+    "requestwrapper"
 )
 
 func (ae *AppEngine) loadAvatar() {
@@ -54,7 +55,7 @@ type MusicItem struct {
     Id float64
     Url string
     LyricsId float64
-    Genre float64
+    Genre string
     Album string
 }
 
@@ -81,8 +82,8 @@ func (ae *AppEngine) loadAudios(uid int) {
         return
     }
     //generate map for albums id->name
-    albummap:=map[float64]string
-    gotalbums:=resp["response"].(map[string]interface{})["items"].(map[string]interface{})
+    albummap:=map[float64]string{}
+    gotalbums:=resp["response"].(map[string]interface{})["items"].([]map[string]interface{})
     for _,v:=range gotalbums {
         id:=v["id"].(float64)
         title:=v["title"].(string)
@@ -101,8 +102,12 @@ func (ae *AppEngine) loadAudios(uid int) {
         duration:=mp["duration"].(float64)
         duration_obj,_:=time.ParseDuration(strconv.FormatFloat(duration,'g',-1,64)+"s")
         item.Duration=duration_obj.String()
-        item.Genre,present=mp["genre_id"].(float64)
-        if !present {item.Genre=0}
+        genreId,present:=mp["genre_id"].(float64)
+        if present {
+            item.Genre=requestwrapper.VkAudioGenres[genreId]
+        } else {
+            item.Genre=""
+        }
         albumid,present:=mp["album_id"].(float64)
         if present {
             item.Album=albummap[albumid]

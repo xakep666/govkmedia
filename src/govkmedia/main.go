@@ -90,7 +90,7 @@ func (ae *AppEngine) toggleWindow(authDone bool) {
         object:=root.ObjectByName(v)
         object.Set("visible",!authDone)
     }
-    authobjects:=[...]string{"tabs","avatar","name","open"}
+    authobjects:=[...]string{"tabs","avatar","name","open","dlallbtn"}
     for _,v:=range authobjects {
         object:=root.ObjectByName(v)
         object.Set("visible",authDone)

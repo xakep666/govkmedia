@@ -36,5 +36,11 @@ GoProject {
             filter: "*.*"
         }
     }
+    Package {
+        name: "github.com/mikkyang/id3-go"
+        Files {
+            filter: "*.*"
+        }
+    }
 }
 

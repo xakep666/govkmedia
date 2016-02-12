@@ -1,6 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.3
-import GoExtensions 1.0
+//import GoExtensions 1.0
 
 ApplicationWindow {
     id: root
@@ -142,6 +142,21 @@ ApplicationWindow {
             switch(tabs.currentIndex) {
             case 0:
                 audioplayer.show()
+            }
+        }
+    }
+
+    Button {
+        id: dlallbtn
+        objectName: "dlallbtn"
+        x: 127
+        y: 195
+        visible: false
+        text: qsTr("Скачать все")
+        onClicked: {
+            switch(tabs.currentIndex) {
+            case 0:
+                appEngine.downloadAllMusic()
             }
         }
     }
