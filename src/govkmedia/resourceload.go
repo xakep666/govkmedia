@@ -55,6 +55,7 @@ type MusicItem struct {
     Url string
     LyricsId float64
     Genre float64
+    Album string
 }
 
 func (ae *AppEngine) loadAudios(uid int) {
@@ -73,6 +74,20 @@ func (ae *AppEngine) loadAudios(uid int) {
     content:=resp["response"].(map[string]interface{})
     items:=content["items"].([]interface{})
     tmplist:=[]audioplayer.PtrSong{}
+    //get albums
+    resp,err=ae.MakeRequest("audio.getAlbums",map[string]string{"owner_id":strconv.Itoa(uid)})
+    if err!=nil {
+        dialogboxes.ShowErrorDialog("Не удалось загрузить аудиозаписи: "+err.Error())
+        return
+    }
+    //generate map for albums id->name
+    albummap:=map[float64]string
+    gotalbums:=resp["response"].(map[string]interface{})["items"].(map[string]interface{})
+    for _,v:=range gotalbums {
+        id:=v["id"].(float64)
+        title:=v["title"].(string)
+        albummap[id]=title
+    }
     for _,v:=range items {
         mp:=v.(map[string]interface{})
         item:=MusicItem{}
@@ -88,6 +103,12 @@ func (ae *AppEngine) loadAudios(uid int) {
         item.Duration=duration_obj.String()
         item.Genre,present=mp["genre_id"].(float64)
         if !present {item.Genre=0}
+        albumid,present:=mp["album_id"].(float64)
+        if present {
+            item.Album=albummap[albumid]
+        } else {
+            item.Album=""
+        }
         model.Call("appendStruct",item)
         tmplist=append(tmplist,audioplayer.PtrSong{Artist: item.Artist,
                                                    Title: item.Title,

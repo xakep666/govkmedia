@@ -93,6 +93,10 @@ ApplicationWindow {
                         role: "genre"
                         visible: false
                     }
+                    TableViewColumn {
+                        role: "album"
+                        visible: false
+                    }
 
                     ListModel {
                         id: musiclist
