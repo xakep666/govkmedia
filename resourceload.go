@@ -3,9 +3,9 @@ package main
 import (
     "strconv"
     "time"
-    "dialogboxes"
-    "audioplayer"
-    "requestwrapper"
+    "govkmedia/dialogboxes"
+    "govkmedia/audioplayer"
+    "govkmedia/requestwrapper"
 )
 
 func (ae *AppEngine) loadAvatar() {
@@ -78,16 +78,18 @@ func (ae *AppEngine) loadAudios(uid int) {
     //get albums
     resp,err=ae.MakeRequest("audio.getAlbums",map[string]string{"owner_id":strconv.Itoa(uid)})
     if err!=nil {
-        dialogboxes.ShowErrorDialog("Не удалось загрузить аудиозаписи: "+err.Error())
+        dialogboxes.ShowErrorDialog("Не удалось загрузить альбомы: "+err.Error())
         return
     }
     //generate map for albums id->name
     albummap:=map[float64]string{}
-    gotalbums:=resp["response"].(map[string]interface{})["items"].([]map[string]interface{})
-    for _,v:=range gotalbums {
-        id:=v["id"].(float64)
-        title:=v["title"].(string)
-        albummap[id]=title
+    gotalbums,hasalbums:=resp["response"].(map[string]interface{})["items"].([]map[string]interface{})
+    if hasalbums {
+        for _,v:=range gotalbums {
+            id:=v["id"].(float64)
+            title:=v["title"].(string)
+            albummap[id]=title
+        }
     }
     for _,v:=range items {
         mp:=v.(map[string]interface{})

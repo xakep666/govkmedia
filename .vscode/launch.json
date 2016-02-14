@@ -6,8 +6,9 @@
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
-			"program": "${workspaceRoot}/govkmedia",
-			"env": {"GOPATH":"${env.GOPATH}:${workspaceRoot"},
+			"program": "${workspaceRoot}",
+            "preLaunchTask": "generate",
+			"env": {},
 			"args": []
 		}
 	]

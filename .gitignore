@@ -5,3 +5,6 @@ src/github.com
 *.user
 qrc.go
 .directory
+debug
+govkmedia
+

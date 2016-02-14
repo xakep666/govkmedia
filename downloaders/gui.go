@@ -3,7 +3,6 @@ package downloaders
 import (
     "github.com/jeffail/tunny"
     "gopkg.in/qml.v1"
-    _"dialogboxes"
     "errors"
     "log"
     "time"

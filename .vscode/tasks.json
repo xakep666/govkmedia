@@ -1,16 +1,17 @@
 {
     "version": "0.1.0",
     "isShellCommand": true,
-    "linux": {
-        "command": "./linuxtasks"
-    },
-    "windows": {
-        "command": "wintasks.cmd"
-    },
+    "command": "go",
     "tasks": [
         {
             "taskName": "generate",
-            "args": ["audioplayer","dialogboxes","downloaders"]
+            "args": ["-x","govkmedia","govkmedia/audioplayer","govkmedia/dialogboxes","govkmedia/downloaders"],
+            "echoCommand": true
+        },
+        {
+            "taskName": "build",
+            "isBuildCommand": true
         }
+        
     ]
 }

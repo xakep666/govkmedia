@@ -6,7 +6,7 @@ import (
         "net/url"
         "log"
         "strings"
-        "requestwrapper"
+        "govkmedia/requestwrapper"
 )
 
 const APP_ID int = 5255931

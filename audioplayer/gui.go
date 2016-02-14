@@ -1,8 +1,8 @@
 package audioplayer
 
 import (
-    "dialogboxes"
-    "requestwrapper"
+    "govkmedia/dialogboxes"
+    "govkmedia/requestwrapper"
     "strconv"
     "time"
 )

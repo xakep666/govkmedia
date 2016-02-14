@@ -4,7 +4,7 @@ import (
     "github.com/nareix/curl"
     id3 "github.com/mikkyang/id3-go"
     v2 "github.com/mikkyang/id3-go/v2"
-    "requestwrapper"
+    "govkmedia/requestwrapper"
     "strconv"
 )
 

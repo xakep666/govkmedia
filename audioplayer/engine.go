@@ -3,7 +3,7 @@ package audioplayer
 import (
     "gopkg.in/qml.v1"
     "log"
-    "dialogboxes"
+    "govkmedia/dialogboxes"
 )
 
 //go:generate genqrc qml icons
