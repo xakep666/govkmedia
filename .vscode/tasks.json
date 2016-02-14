@@ -1,0 +1,16 @@
+{
+    "version": "0.1.0",
+    "isShellCommand": true,
+    "linux": {
+        "command": "./linuxtasks"
+    },
+    "windows": {
+        "command": "wintasks.cmd"
+    },
+    "tasks": [
+        {
+            "taskName": "generate",
+            "args": ["audioplayer","dialogboxes","downloaders"]
+        }
+    ]
+}
