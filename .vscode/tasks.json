@@ -11,7 +11,10 @@
         {
             "taskName": "build",
             "isBuildCommand": true
+        },
+        {
+            "taskName": "get",
+            "echoCommand": true
         }
-        
     ]
 }

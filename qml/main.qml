@@ -102,8 +102,9 @@ ApplicationWindow {
                         id: musiclist
                         objectName: qsTr("musiclist")
                         //translate go struct to dict, direct call "append" from go not works
-
                         function appendStruct(m) {append(m)}
+                        //wrap get method for calling from go
+                        function goGet(i) {return get(i)}
                     }
                 }
         }
