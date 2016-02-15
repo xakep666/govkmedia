@@ -7,7 +7,26 @@ import (
 	"govkmedia/downloaders"
     "strconv"
     "strings"
+    "path/filepath"
+    "os"
+    "errors"
 )
+
+func (ae *AppEngine) mkSubDir(path string) error {
+    //check if already exist
+    info,err:=os.Stat(path)
+    if err==nil {
+        if !info.IsDir() {
+            return errors.New("Can not create directory, path collision")
+        }
+    }
+    err=os.Mkdir(path,os.ModeDir)
+    if err!=nil {
+        dialogboxes.ShowErrorDialog(err.Error())
+        return err
+    }
+    return nil
+}
 
 func (ae *AppEngine) DownloadAllMusic() {
 	mwroot := ae.MainWindow.Root()
@@ -37,6 +56,15 @@ func (ae *AppEngine) DownloadAllMusic() {
 				AccessToken: ae.RequestAccesser.Token,
 			}
 			dlItem.SetSource(item.Url)
+            if item.Album!="" {
+                tmppath:=filepath.Join(dstpath,item.Album)
+                err:=ae.mkSubDir(tmppath)
+                if err!=nil {
+                    dialogboxes.ShowErrorDialog(err.Error())
+                    return
+                }
+                dstpath=tmppath
+            }
 			dlItem.AllocateFile(dstpath, fmt.Sprintf("%s - %s", item.Artist, item.Title), "mp3")
 			dl = append(dl, &dlItem)
 		}
@@ -91,6 +119,15 @@ func (ae *AppEngine) DownloadSelectedMusic() {
 				AccessToken: ae.RequestAccesser.Token,
 			}
 			dlItem.SetSource(item.Url)
+            if item.Album!="" {
+                tmppath:=filepath.Join(dstpath,item.Album)
+                err:=ae.mkSubDir(tmppath)
+                if err!=nil {
+                    dialogboxes.ShowErrorDialog(err.Error())
+                    return
+                }
+                dstpath=tmppath
+            }
 			dlItem.AllocateFile(dstpath, fmt.Sprintf("%s - %s", item.Artist, item.Title), "mp3")
 			dl = append(dl, &dlItem)
         }
