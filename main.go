@@ -22,7 +22,7 @@ func main() {
 }
 
 func run() error {
-        registerQMLTypes()
+    registerQMLTypes()
 	engine := qml.NewEngine()
         component, err := engine.LoadFile("qrc:///qml/main.qml")
 	if err != nil {
@@ -90,7 +90,7 @@ func (ae *AppEngine) toggleWindow(authDone bool) {
         object:=root.ObjectByName(v)
         object.Set("visible",!authDone)
     }
-    authobjects:=[...]string{"tabs","avatar","name","open","dlallbtn"}
+    authobjects:=[...]string{"tabs","avatar","name","open","dlallbtn","dlselbtn"}
     for _,v:=range authobjects {
         object:=root.ObjectByName(v)
         object.Set("visible",authDone)

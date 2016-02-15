@@ -105,6 +105,13 @@ ApplicationWindow {
                         function appendStruct(m) {append(m)}
                         //wrap get method for calling from go
                         function goGet(i) {return get(i)}
+                        property string selected: ""
+                        function goFillSelected() {
+                            selected=""
+                            musictable.selection.forEach(function(index){
+                                selected+=index+" "
+                            })
+                        }
                     }
                 }
         }
@@ -135,8 +142,9 @@ ApplicationWindow {
     Button {
         id: open
         objectName: qsTr("open")
-        x: 127
+        x: 90
         y: 166
+        width: 118
         text: qsTr("Открыть")
         visible:false
         onClicked: {
@@ -150,14 +158,31 @@ ApplicationWindow {
     Button {
         id: dlallbtn
         objectName: "dlallbtn"
-        x: 127
-        y: 195
+        x: 90
+        y: 224
+        width: 118
         visible: false
         text: qsTr("Скачать все")
         onClicked: {
             switch(tabs.currentIndex) {
             case 0:
                 appEngine.downloadAllMusic()
+            }
+        }
+    }
+    
+    Button {
+        id: dlselbtn
+        objectName: "dlselbtn"
+        x: 90
+        y: 195
+        width: 118
+        visible: false
+        text: qsTr("Скачать выбранное")
+        onClicked: {
+            switch(tabs.currentIndex) {
+            case 0:
+                appEngine.downloadSelectedMusic()
             }
         }
     }
