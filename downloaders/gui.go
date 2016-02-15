@@ -49,13 +49,18 @@ func Initialize(srcs []Downloadable,threads int) (d *DownloadEngine,err error) {
         item:=model.Call("back").(qml.Object)
         index:=model.Int("count")-1
         dlo.Progress(func (p curl.ProgressStatus) {
-            if p.Size!=0 { d.completedl[index]=p.Size }
-            if p.ContentLength!=0 { d.totaldl[index]=p.ContentLength }
-            d.updateTotalProgress()
+            if p.Size!=0 && d.completedl[index]!=p.Size { d.completedl[index]=p.Size }
+            if p.ContentLength!=0 && d.totaldl[index]!=p.ContentLength { d.totaldl[index]=p.ContentLength }
             //when download completes, percents sets to 0
-            if p.Percent!=0 { item.Set("dlprogress",p.Percent) }
+            if p.Percent!=0 { 
+                item.Set("dlprogress",p.Percent)
+            } else {
+                item.Set("dlprogress",1)
+                d.completedl[index]=d.totaldl[index]
+            }
             item.Set("dlspeed",curl.PrettySpeedString(p.Speed))
-        },500*time.Millisecond)
+            d.updateTotalProgress()
+        },100*time.Millisecond)
         _,err:=object.(Downloadable).Do()
         if err!=nil { /*dialogboxes.ShowErrorDialog(err.Error())*/ log.Println(err.Error()) }
         return nil
@@ -88,7 +93,10 @@ func (d *DownloadEngine) Pause() {
 }
 
 func (d *DownloadEngine) Cancel() {
-    for i:=0;i<len(d.srcs);i++ { d.srcs[i].Stop() }
+    for i:=0;i<len(d.srcs);i++ { 
+        //don`t call stop for completed
+        if d.completedl[i]!=d.totaldl[i] { d.srcs[i].Stop() }
+    }
 }
 
 //percentage
