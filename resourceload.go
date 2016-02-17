@@ -59,7 +59,7 @@ type MusicItem struct {
     Album string
 }
 
-func (ae *AppEngine) loadAudios(uid int) {
+func (ae *AppEngine) LoadAudios(uid int) {
     params:=map[string]string{
         "owner_id":strconv.Itoa(uid),
         "count":"6000",

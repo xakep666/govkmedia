@@ -154,6 +154,46 @@ ApplicationWindow {
             }
         }
     }
+    
+    Button {
+        id: mymedia
+        objectName: "mymedia"
+        x:6
+        y:166
+        visible: false
+        states: [
+            State {
+                name: "music"
+                when: tabs.currentIndex==0
+                PropertyChanges{
+                    target: mymedia
+                    text: qsTr("Моя музыка")
+                }
+            },
+            State {
+                name: "photo"
+                when: tabs.currentIndex==1
+                PropertyChanges{
+                    target: mymedia
+                    text: qsTr("Мои фото")
+                }
+            },
+            State {
+                name: "video"
+                when: tabs.currentIndex==2
+                PropertyChanges {
+                    target: mymedia
+                    text: qsTr("Мои видео")
+                }
+            }
+        ]
+        onClicked: {
+            switch(tabs.currentIndex) {
+            case 0:
+                appEngine.loadAudios(appEngine.requestAccesser.userId)
+            }
+        }
+    }
 
     Button {
         id: dlallbtn

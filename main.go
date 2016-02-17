@@ -79,7 +79,7 @@ func (ae *AppEngine) CheckAuth(inurl string) {
     ae.UserId,_=strconv.Atoi(authQuery.Get("user_id"))
     go ae.loadAvatar()
     go ae.loadName()
-    go ae.loadAudios(ae.UserId)
+    go ae.LoadAudios(ae.UserId)
     ae.toggleWindow(true)
 }
 
@@ -90,7 +90,7 @@ func (ae *AppEngine) toggleWindow(authDone bool) {
         object:=root.ObjectByName(v)
         object.Set("visible",!authDone)
     }
-    authobjects:=[...]string{"tabs","avatar","name","open","dlallbtn","dlselbtn"}
+    authobjects:=[...]string{"tabs","avatar","name","open","dlallbtn","dlselbtn","mymedia"}
     for _,v:=range authobjects {
         object:=root.ObjectByName(v)
         object.Set("visible",authDone)
