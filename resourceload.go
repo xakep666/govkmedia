@@ -6,6 +6,7 @@ import (
     "govkmedia/dialogboxes"
     "govkmedia/audioplayer"
     "govkmedia/requestwrapper"
+    "gopkg.in/qml.v1"
 )
 
 func (ae *AppEngine) loadAvatar() {
@@ -124,6 +125,14 @@ func (ae *AppEngine) LoadAudios(uid int) {
                                                    LyricsId: item.LyricsId})
     }
     player:=audioplayer.Engine{}
-    ae.QMLEngine.Context().SetVar("audioplayer",&player)
     player.Initialize(ae.Token,tmplist)
+    ae.QMLEngine.Context().SetVar("audioplayer",&player)
+    qml.Changed(&player,&player)
+}
+
+func (ae *AppEngine) LoadGroupAudios() {
+    go func() {
+        gid:=dialogboxes.SelectGroupDialog(ae.UserId,ae.Token)
+        if (gid!=-1) { ae.LoadAudios(-gid) }
+    }()
 }

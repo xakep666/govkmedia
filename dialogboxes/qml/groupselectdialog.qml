@@ -1,27 +1,31 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.3
+import GoExtensions 1.0
 ApplicationWindow {
     id: mainwindow
+    property int selectedgid:-1
+    signal selectedgidchanged
+    width:640
+    height:480
     Component {
         id: groupDelegate
-        Row{
+        Rectangle{
                 id: group
+                objectName: "grouprow"
                 x: 0
                 y: 0
                 width: mainwindow.width-20
                 height: 116
 
                 Image {
-                    id: groupavatar
                     x: 8
                     y: 8
                     width: 100
                     height: 100
-                    source: grouplistview.model.get(styleData.row).avatar
+                    source: avatar
                 }
 
                 Text {
-                    id: groupname
                     x: 114
                     y: 8
                     width: group.width-125
@@ -29,7 +33,7 @@ ApplicationWindow {
                     styleColor: "#0e01ec"
                     font.bold: true
                     font.pixelSize: 20
-                    text: grouplistview.model.get(styleData.row).name
+                    text: name
                 }
 
                 MouseArea {
@@ -37,11 +41,16 @@ ApplicationWindow {
                     y:8
                     width: group.width-125
                     height: 32
-                    onClicked: grouplist.selectedgid=grouplistview.model.get(styleData.row).gid
+                    onClicked: {
+                        mainwindow.selectedgid=gid
+                        mainwindow.close()
+                    }
                 }
 
                 Text {
-                    id: text1
+                    id: subscriberstxt
+                    visible: group.ListView.view.subscribersvisible
+                    objectName: "subrscriberstxt"
                     x: 114
                     y: 52
                     height: 13
@@ -51,29 +60,32 @@ ApplicationWindow {
                 }
 
                 Text {
-                    id: subscribers
+                    visible: group.ListView.view.subscribersvisible
+                    id: subscribersnum
+                    objectName: "subscribers"
                     x: 200
                     y: 52
                     width: group.width-210
                     height: 13
                     font.pixelSize: 12
                     color: "#dacfe3"
-                    text: grouplistview.model.get(styleData.row).name
+                    text: subscribers
                 }
             }
     }
     ListView {
         x:10
-        y:10
+        y:50
+        objectName: "grouplistview"
         width: mainwindow.width-20
-        height: mainwindow.height-50
+        height: mainwindow.height-90
         id: grouplistview
         model: grouplist
         delegate: groupDelegate
+        property bool subscribersvisible: true
     }
     ListModel {
         id: grouplist
-        property int selectedgid:-1
         objectName: "grouplist"
         function appendStruct(m) { append(m) }
     }
@@ -97,4 +109,30 @@ ApplicationWindow {
         horizontalAlignment: Text.AlignHCenter
         font.pixelSize: 12
     }
+
+    TextField {
+        id: searchfield
+        x: 10
+        y: 22
+        width: mainwindow.width-200
+        height: 22
+        placeholderText: qsTr("Поиск")
+    }
+
+    Button {
+        id: searchbtn
+        x: mainwindow.width-180
+        y: 22
+        text: qsTr("Найти")
+        onClicked: engine.searchGroups(searchfield.text)
+    }
+
+    Button {
+        id: mygrpbtn
+        x: mainwindow.width-90
+        y: 22
+        text: qsTr("Мои группы")
+        onClicked: engine.loadUserGroups(engine.myUid)
+    }
+    onClosing: selectedgidchanged()
 }

@@ -5,7 +5,7 @@ import QtQuick.Controls 1.3
 ApplicationWindow {
     id: root
 
-    width: 700
+    width: 800
     height: 500
     color: "#ffffff"
     title: qsTr("GoVkMedia")
@@ -47,7 +47,7 @@ ApplicationWindow {
     TabView{
         id: tabs
         objectName: qsTr("tabs")
-        x: 210
+        x: 250
         y: 10
         width: root.width-220
         height: root.height-20
@@ -142,7 +142,7 @@ ApplicationWindow {
     Button {
         id: open
         objectName: qsTr("open")
-        x: 90
+        x: 120
         y: 166
         width: 118
         text: qsTr("Открыть")
@@ -160,6 +160,7 @@ ApplicationWindow {
         objectName: "mymedia"
         x:6
         y:166
+        width: 105
         visible: false
         states: [
             State {
@@ -196,9 +197,50 @@ ApplicationWindow {
     }
 
     Button {
+        id: groupmedia
+        objectName: "groupmedia"
+        visible:false
+        x:6
+        y:193
+        width: 105
+        states: [
+            State {
+                name: "music"
+                when: tabs.currentIndex==0
+                PropertyChanges{
+                    target: groupmedia
+                    text: qsTr("Музыка группы")
+                }
+            },
+            State {
+                name: "photo"
+                when: tabs.currentIndex==1
+                PropertyChanges{
+                    target: groupmedia
+                    text: qsTr("Фото группы")
+                }
+            },
+            State {
+                name: "video"
+                when: tabs.currentIndex==2
+                PropertyChanges {
+                    target: groupmedia
+                    text: qsTr("Видео группы")
+                }
+            }
+        ]
+        onClicked:{
+            switch(tabs.currentIndex) {
+            case 0:
+                appEngine.loadGroupAudios()
+            }
+        }
+    }
+
+    Button {
         id: dlallbtn
         objectName: "dlallbtn"
-        x: 90
+        x: 120
         y: 224
         width: 118
         visible: false
@@ -214,7 +256,7 @@ ApplicationWindow {
     Button {
         id: dlselbtn
         objectName: "dlselbtn"
-        x: 90
+        x: 120
         y: 195
         width: 118
         visible: false
